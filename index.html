@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Grade Requirement Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+
+        .error-message {
+            color: #ef4444;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .error-input {
+            border-color: #ef4444 !important;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .grade-badge {
+            font-weight: 500;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            color: white;
+            font-size: 0.75rem;
+        }
+
+        .grade-a-plus {
+            background-color: #10b981;
+        }
+
+        .grade-a {
+            background-color: #10b981;
+        }
+
+        .grade-a-minus {
+            background-color: #10b981;
+        }
+
+        .grade-b-plus {
+            background-color: #3b82f6;
+        }
+
+        .grade-b {
+            background-color: #3b82f6;
+        }
+
+        .grade-b-minus {
+            background-color: #3b82f6;
+        }
+
+        .grade-c-plus {
+            background-color: #f59e0b;
+        }
+
+        .grade-c {
+            background-color: #f59e0b;
+        }
+
+        .grade-c-minus {
+            background-color: #f59e0b;
+        }
+
+        .grade-d-plus {
+            background-color: #ef4444;
+        }
+
+        .grade-d {
+            background-color: #ef4444;
+        }
+
+        .grade-e {
+            background-color: #ef4444;
+        }
+
+        .pass-badge {
+            background-color: #10b981;
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .fail-badge {
+            background-color: #ef4444;
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <div>
+            <h1 class="text-3xl font-bold text-left text-gray-800 mb-2 mt-4">Final Grade Requirement Calculator</h1>
+            <p class="text-md font-light text-left text-gray-800 mb-8">
+                Enter your assessment details and marks to calculate your CA score and see how much you need in the
+                final exam to pass or hit your target grade.
+            </p>
+        </div>
+        <!-- Saved Modules Section -->
+        <section id="saved-modules-section" class="bg-white rounded-sm border border-gray-300 shadow-sm p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Saved Modules</h2>
+            <div id="saved-modules-list" class="space-y-3 mb-4">
+                <p id="no-modules-message" class="text-gray-500">No saved modules yet.</p>
+            </div>
+            <button id="create-new-module-btn"
+                class="px-4 py-2 bg-gray-800 text-white rounded-sm hover:bg-gray-700 transition-colors">
+                Create New Module
+            </button>
+        </section>
+
+        <!-- Module Setup Section -->
+        <section id="module-setup-section" class="bg-white rounded-sm border border-gray-300 shadow-sm p-6 mb-6 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Module Setup</h2>
+            <form id="module-setup-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="module-name">Module Name</label>
+                    <input
+                        class="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+                        id="module-name" type="text" placeholder="e.g., Discrete Mathematics" required>
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-gray-800 mb-2">Assessment Activities</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="text-left text-sm text-gray-600 border-b">
+                                    <th class="pb-2">Activity Name</th>
+                                    <th class="pb-2">Weight (%)</th>
+                                    <th class="pb-2">Max Mark</th>
+                                    <th class="pb-2">Final Exam</th>
+                                    <th class="pb-2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activities-table-body" class="divide-y">
+                                <!-- Activities will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-2">
+                        <div id="weight-error" class="error-message hidden"></div>
+                        <div id="final-exam-error" class="error-message hidden">Exactly one Final Exam must be selected
+                        </div>
+                        <div id="unique-name-error" class="error-message hidden">Assessment names must be unique</div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="button" id="add-activity-btn"
+                            class="inline-flex items-center px-3 py-1.5 text-sm border border-gray-300 rounded-sm hover:bg-gray-50 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Add Activity
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" id="save-module-btn"
+                        class="px-4 py-2 bg-gray-800 text-white rounded-sm hover:bg-gray-700 transition-colors">
+                        Save Module
+                    </button>
+                    <button type="button" id="back-to-saved-modules-btn"
+                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 transition-colors">
+                        Back
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Marks Input Section -->
+        <section id="marks-input-section" class="bg-white rounded-md border-black shadow-sm p-6 mb-6 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-1">Marks Input</h2>
+            <p class="text-gray-600 mb-4" id="module-name-display"></p>
+            <form id="marks-input-form" class="space-y-4">
+                <div id="marks-input-fields">
+                    <!--  fields will be added here dynamically -->
+                </div>
+
+                <div class="flex space-x-3 pt-4">
+                    <button type="submit" id="calculate-ca-btn"
+                        class="px-4 py-2 bg-gray-800 text-white rounded-sm hover:bg-gray-700 transition-colors">
+                        Calculate CA Marks
+                    </button>
+                    <button type="button" id="back-to-module-setup-btn"
+                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 transition-colors">
+                        Back
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="bg-white rounded-md border-black shadow-sm p-6 mb-6 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-1">Results</h2>
+            <p class="text-gray-600 mb-4" id="results-module-name"></p>
+
+            <div class="mb-6 p-4 bg-gray-50 rounded-sm">
+                <h3 class="text-lg font-medium text-gray-800 mb-2">Continuous Assessment (CA) Results</h3>
+                <p class="mb-1">CA Marks: <span id="ca-marks-result" class="font-semibold"></span></p>
+                <p>Status: <span id="pass-fail-status"></span></p>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Final Exam Requirements</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-sm text-gray-600 border-b">
+                                <th class="pb-2">Grade</th>
+                                <th class="pb-2">Required Final Exam Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="final-exam-requirements" class="divide-y">
+                            <!-- Requirements will be added here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mb-6 p-4 bg-gray-50 rounded-sm">
+                <h3 class="text-lg font-medium text-gray-800 mb-3">Calculate Final Grade</h3>
+                <form id="final-grade-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="final-exam-mark">Final Exam
+                            Mark</label>
+                        <input
+                            class="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+                            id="final-exam-mark" type="text" placeholder="e.g., 75 or 15/20">
+                        <div id="final-exam-mark-error" class="error-message hidden">Invalid mark format</div>
+                    </div>
+
+                    <div>
+                        <button type="submit" id="calculate-final-grade-btn"
+                            class="px-4 py-2 bg-gray-800 text-white rounded-sm hover:bg-gray-700 transition-colors">
+                            Calculate Final Grade
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="final-grade-result" class="mb-6 p-4 bg-gray-50 rounded-sm hidden">
+                <h3 class="text-lg font-medium text-gray-800 mb-2">Final Grade</h3>
+                <p>Your final grade is: <span id="final-grade" class="font-semibold"></span></p>
+            </div>
+
+            <div class="flex space-x-3">
+                <button type="button" id="back-to-marks-input-btn"
+                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 transition-colors">
+                    Back to Marks Input
+                </button>
+                <button type="button" id="back-to-saved-modules-from-results-btn"
+                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 transition-colors">
+                    Back to Saved Modules
+                </button>
+            </div>
+        </section>
+
+        <footer
+            class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-4 px-4 text-center text-gray-500 text-sm z-10">
+            <p class="mt-1">
+                Built by
+                <a href="https://x.com/chamalsena" target="_blank" rel="noopener noreferrer"
+                    class="text-blue-600 hover:underline">
+                    Chamal Senarathna
+                </a>.
+                The source code is available on
+                <a href="https://github.com/chamals3n4/ca-marks-breakdown" target="_blank" rel="noopener noreferrer"
+                    class="text-blue-600 hover:underline">
+                    GitHub
+                </a>.
+            </p>
+        </footer>
+
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirmation-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-md border-black p-6 max-w-md w-full mx-4">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Confirm Deletion</h2>
+            <p class="mb-6">Are you sure you want to delete this module?</p>
+            <div class="flex justify-end space-x-3">
+                <button id="cancel-delete-btn"
+                    class="px-4 py-2 border border-gray-300 text-gray-700 rounded-sm hover:bg-gray-50 transition-colors">
+                    Cancel
+                </button>
+                <button id="confirm-delete-btn"
+                    class="px-4 py-2 bg-red-500 text-white rounded-sm hover:bg-red-600 transition-colors">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Global variables
+            let currentModule = {
+                id: null,
+                name: '',
+                assessments: [],
+                caMarks: null,
+                caMarksInput: {},
+                finalExamMark: null,
+                finalGrade: null,
+                lastUpdated: null
+            };
+
+            let moduleToDelete = null;
+
+            // Grade boundaries
+            const gradeBoundaries = [
+                { grade: 'A+', min: 85 },
+                { grade: 'A', min: 75 },
+                { grade: 'A-', min: 70 },
+                { grade: 'B+', min: 65 },
+                { grade: 'B', min: 60 },
+                { grade: 'B-', min: 55 },
+                { grade: 'C+', min: 50 },
+                { grade: 'C', min: 45 },
+                { grade: 'C-', min: 40 },
+                { grade: 'D+', min: 35 },
+                { grade: 'D', min: 30 },
+                { grade: 'E', min: 0 }
+            ];
+
+            // DOM Elements
+            const sections = {
+                savedModules: document.getElementById('saved-modules-section'),
+                moduleSetup: document.getElementById('module-setup-section'),
+                marksInput: document.getElementById('marks-input-section'),
+                results: document.getElementById('results-section')
+            };
+
+            const deleteModal = document.getElementById('delete-confirmation-modal');
+
+            // Initialize the application
+            initApp();
+
+            function initApp() {
+                // Add event listeners
+                document.getElementById('create-new-module-btn').addEventListener('click', showModuleSetup);
+                document.getElementById('back-to-saved-modules-btn').addEventListener('click', showSavedModules);
+                document.getElementById('back-to-module-setup-btn').addEventListener('click', showModuleSetup);
+                document.getElementById('back-to-marks-input-btn').addEventListener('click', showMarksInput);
+                document.getElementById('back-to-saved-modules-from-results-btn').addEventListener('click', showSavedModules);
+
+                document.getElementById('add-activity-btn').addEventListener('click', addActivity);
+                document.getElementById('module-setup-form').addEventListener('submit', saveModule);
+                document.getElementById('marks-input-form').addEventListener('submit', calculateCAMarks);
+                document.getElementById('final-grade-form').addEventListener('submit', calculateFinalGrade);
+                document.getElementById('confirm-delete-btn').addEventListener('click', confirmDeleteModule);
+                document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+                    deleteModal.classList.add('hidden');
+                });
+
+                // Add initial activity row
+                addActivity();
+
+                // Load saved modules
+                loadSavedModules();
+
+                // Show saved modules section
+                showSavedModules();
+            }
+
+            // Navigation functions
+            function showSection(sectionToShow) {
+                Object.values(sections).forEach(section => {
+                    section.classList.add('hidden');
+                });
+                sectionToShow.classList.remove('hidden');
+            }
+
+            function showSavedModules() {
+                showSection(sections.savedModules);
+                loadSavedModules();
+            }
+
+            function showModuleSetup() {
+                showSection(sections.moduleSetup);
+            }
+
+            function showMarksInput() {
+                showSection(sections.marksInput);
+                populateMarksInputFields();
+            }
+
+            function showResults() {
+                showSection(sections.results);
+                displayResults();
+            }
+
+            // Module Setup functions
+            function addActivity() {
+                const activitiesTableBody = document.getElementById('activities-table-body');
+                const rowCount = activitiesTableBody.children.length;
+
+                const row = document.createElement('tr');
+                row.className = 'border-b';
+
+                // Default max mark is 100
+                let defaultMaxMark = 100;
+
+                row.innerHTML = `
+                    <td class="py-3 pr-2">
+                        <input class="w-full px-3 py-1.5 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-400 activity-name" 
+                               type="text" placeholder="e.g., Quiz 01" required>
+                    </td>
+                    <td class="py-3 pr-2">
+                        <input class="w-full px-3 py-1.5 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-400 activity-weight" 
+                               type="number" min="1" max="100" placeholder="e.g., 10" required>
+                    </td>
+                    <td class="py-3 pr-2">
+                        <input class="w-full px-3 py-1.5 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-400 activity-max-mark" 
+                               type="number" min="1" value="${defaultMaxMark}" required>
+                    </td>
+                    <td class="py-3 pr-2 text-center">
+                        <input class="h-4 w-4 text-gray-800 focus:ring-gray-400 activity-final-exam" type="checkbox">
+                    </td>
+                    <td class="py-3">
+                        <button type="button" class="inline-flex items-center justify-center p-1.5 text-red-500 rounded-sm hover:bg-red-50 transition-colors remove-activity-btn" 
+                                ${rowCount === 0 ? 'disabled' : ''}>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </td>
+                `;
+
+                activitiesTableBody.appendChild(row);
+
+                // Add event listeners to the new row
+                const nameInput = row.querySelector('.activity-name');
+                const maxMarkInput = row.querySelector('.activity-max-mark');
+                const finalExamCheckbox = row.querySelector('.activity-final-exam');
+                const removeButton = row.querySelector('.remove-activity-btn');
+
+                // Set max mark to 10 if activity name contains "Lab"
+                nameInput.addEventListener('input', function () {
+                    if (this.value.toLowerCase().includes('lab')) {
+                        maxMarkInput.value = 10;
+                    }
+                });
+
+                // Ensure only one final exam is selected
+                finalExamCheckbox.addEventListener('change', function () {
+                    if (this.checked) {
+                        document.querySelectorAll('.activity-final-exam').forEach(checkbox => {
+                            if (checkbox !== this) {
+                                checkbox.checked = false;
+                            }
+                        });
+                    }
+                });
+
+                // Remove activity row
+                removeButton.addEventListener('click', function () {
+                    if (activitiesTableBody.children.length > 1) {
+                        row.remove();
+                        validateModuleSetup();
+                    }
+                });
+
+                // Validate on input change
+                row.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('input', validateModuleSetup);
+                    input.addEventListener('change', validateModuleSetup);
+                });
+            }
+
+            function validateModuleSetup() {
+                const weightError = document.getElementById('weight-error');
+                const finalExamError = document.getElementById('final-exam-error');
+                const uniqueNameError = document.getElementById('unique-name-error');
+                const saveButton = document.getElementById('save-module-btn');
+
+                // Reset errors
+                weightError.classList.add('hidden');
+                finalExamError.classList.add('hidden');
+                uniqueNameError.classList.add('hidden');
+
+                let isValid = true;
+
+                // Check total weight
+                const weights = Array.from(document.querySelectorAll('.activity-weight')).map(input => parseFloat(input.value) || 0);
+                const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+
+                if (totalWeight !== 100) {
+                    weightError.classList.remove('hidden');
+                    weightError.textContent = `Total weight must equal 100% (current: ${totalWeight}%)`;
+                    isValid = false;
+                }
+
+                // Check final exam
+                const finalExamCount = document.querySelectorAll('.activity-final-exam:checked').length;
+
+                if (finalExamCount !== 1) {
+                    finalExamError.classList.remove('hidden');
+                    isValid = false;
+                }
+
+                // Check unique names
+                const activityNames = Array.from(document.querySelectorAll('.activity-name')).map(input => input.value.trim());
+                const uniqueNames = new Set(activityNames.filter(name => name !== ''));
+
+                if (uniqueNames.size !== activityNames.filter(name => name !== '').length) {
+                    uniqueNameError.classList.remove('hidden');
+                    isValid = false;
+                }
+
+                // Enable/disable save button
+                saveButton.disabled = !isValid;
+
+                return isValid;
+            }
+
+            function saveModule(event) {
+                event.preventDefault();
+
+                if (!validateModuleSetup()) {
+                    return;
+                }
+
+                // Get module name
+                const moduleName = document.getElementById('module-name').value.trim();
+
+                // Get assessments
+                const assessments = [];
+                const rows = document.querySelectorAll('#activities-table-body tr');
+
+                rows.forEach(row => {
+                    const name = row.querySelector('.activity-name').value.trim();
+                    const weight = parseFloat(row.querySelector('.activity-weight').value);
+                    const maxMark = parseFloat(row.querySelector('.activity-max-mark').value);
+                    const isFinalExam = row.querySelector('.activity-final-exam').checked;
+
+                    assessments.push({
+                        name,
+                        weight,
+                        maxMark,
+                        isFinalExam
+                    });
+                });
+
+                // Update current module
+                currentModule = {
+                    id: currentModule.id || Date.now().toString(),
+                    name: moduleName,
+                    assessments,
+                    caMarks: null,
+                    caMarksInput: {},
+                    finalExamMark: null,
+                    finalGrade: null,
+                    lastUpdated: new Date().toISOString()
+                };
+
+                // Save to localStorage
+                saveModuleToStorage(currentModule);
+
+                // Show marks input section
+                document.getElementById('module-name-display').textContent = moduleName;
+                showMarksInput();
+            }
+
+            // Marks Input functions
+            function populateMarksInputFields() {
+                const marksInputFields = document.getElementById('marks-input-fields');
+                marksInputFields.innerHTML = '';
+
+                // Get non-final exam assessments
+                const nonFinalExamAssessments = currentModule.assessments.filter(assessment => !assessment.isFinalExam);
+
+                nonFinalExamAssessments.forEach(assessment => {
+                    const fieldId = `mark-${assessment.name.replace(/\s+/g, '-').toLowerCase()}`;
+                    const savedValue = currentModule.caMarksInput[assessment.name] || '';
+
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.className = 'mb-4';
+
+                    fieldDiv.innerHTML = `
+                        <label class="block text-sm font-medium text-gray-700 mb-1" for="${fieldId}">
+                            ${assessment.name} (Weight: ${assessment.weight}%, Max Mark: ${assessment.maxMark})
+                        </label>
+                        <input class="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-400 mark-input" 
+                               id="${fieldId}" 
+                               data-assessment-name="${assessment.name}"
+                               data-max-mark="${assessment.maxMark}"
+                               type="text" 
+                               placeholder="e.g., 80% or 18/20"
+                               value="${savedValue}"
+                               required>
+                        <div class="error-message hidden"></div>
+                    `;
+
+                    marksInputFields.appendChild(fieldDiv);
+                });
+            }
+
+            function parseMark(input, maxMark) {
+
+                input = input.trim();
+
+
+                if (!input) {
+                    return null;
+                }
+
+                //  if input is a fraction 
+                if (input.includes('/')) {
+                    const parts = input.split('/');
+                    if (parts.length !== 2) {
+                        return null;
+                    }
+
+                    const numerator = parseFloat(parts[0]);
+                    const denominator = parseFloat(parts[1]);
+
+                    if (isNaN(numerator) || isNaN(denominator) || denominator <= 0 || numerator < 0) {
+                        return null;
+                    }
+
+                    return (numerator / denominator) * 100;
+                }
+
+                //  if input is a percentage
+                if (input.endsWith('%')) {
+                    const percentage = parseFloat(input.slice(0, -1));
+
+                    if (isNaN(percentage) || percentage < 0) {
+                        return null;
+                    }
+
+                    return percentage;
+                }
+
+                const value = parseFloat(input);
+
+                if (isNaN(value) || value < 0) {
+                    return null;
+                }
+
+                return (value / maxMark) * 100;
+            }
+
+            function calculateCAMarks(event) {
+                event.preventDefault();
+
+                document.querySelectorAll('.mark-input').forEach(input => {
+                    input.classList.remove('error-input');
+                    input.nextElementSibling.classList.add('hidden');
+                });
+
+                const markInputs = document.querySelectorAll('.mark-input');
+                let isValid = true;
+                const caMarksInput = {};
+
+                // validate and parse marks
+                markInputs.forEach(input => {
+                    const assessmentName = input.dataset.assessmentName;
+                    const maxMark = parseFloat(input.dataset.maxMark);
+                    const inputValue = input.value.trim();
+
+                    caMarksInput[assessmentName] = inputValue;
+
+                    const mark = parseMark(inputValue, maxMark);
+
+                    if (mark === null) {
+                        input.classList.add('error-input');
+                        const errorMessage = input.nextElementSibling;
+                        errorMessage.textContent = 'Invalid: use e.g., 7/10 or 70%';
+                        errorMessage.classList.remove('hidden');
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    return;
+                }
+
+                // Calculate CA
+                let caMarksTotal = 0;
+                let totalNonFinalExamWeight = 0;
+
+                currentModule.assessments.forEach(assessment => {
+                    if (!assessment.isFinalExam) {
+                        const input = document.querySelector(`.mark-input[data-assessment-name="${assessment.name}"]`);
+                        const mark = parseMark(input.value, assessment.maxMark);
+
+                        caMarksTotal += (mark * assessment.weight / 100);
+                        totalNonFinalExamWeight += assessment.weight;
+                    }
+                });
+
+                currentModule.caMarks = caMarksTotal;
+                currentModule.caMarksInput = caMarksInput;
+                currentModule.lastUpdated = new Date().toISOString();
+
+                saveModuleToStorage(currentModule);
+
+                showResults();
+            }
+
+            function displayResults() {
+                document.getElementById('results-module-name').textContent = currentModule.name;
+
+                const totalNonFinalExamWeight = currentModule.assessments
+                    .filter(assessment => !assessment.isFinalExam)
+                    .reduce((sum, assessment) => sum + assessment.weight, 0);
+
+                const normalizedCA = (currentModule.caMarks / totalNonFinalExamWeight) * 100;
+
+
+                // console.log("=== CA Calculation Debug ===");
+                // console.log("Raw CA Marks:", currentModule.caMarks);
+                // console.log("Total Non-Final Exam Weight:", totalNonFinalExamWeight);
+                // console.log("Normalized CA:", normalizedCA);
+                // console.log("Expected: 63.45% for the example data");
+
+
+                document.getElementById('ca-marks-result').textContent = `${normalizedCA.toFixed(2)}%`;
+
+
+                const passFailStatus = document.getElementById('pass-fail-status');
+                if (normalizedCA >= 45) {
+                    passFailStatus.innerHTML = '<span class="pass-badge">PASSED (CA Marks are 45% or higher)</span>';
+                } else {
+                    passFailStatus.innerHTML = '<span class="fail-badge">FAILED (CA Marks are less than 45%)</span>';
+                }
+
+                generateFinalExamRequirements(normalizedCA);
+
+                document.getElementById('final-exam-mark').value = currentModule.finalExamMark || '';
+                document.getElementById('final-exam-mark-error').classList.add('hidden');
+
+                if (currentModule.finalGrade) {
+                    document.getElementById('final-grade').textContent = currentModule.finalGrade;
+                    document.getElementById('final-grade-result').classList.remove('hidden');
+                } else {
+                    document.getElementById('final-grade-result').classList.add('hidden');
+                }
+            }
+
+            function generateFinalExamRequirements(normalizedCA) {
+                const finalExamRequirements = document.getElementById('final-exam-requirements');
+                finalExamRequirements.innerHTML = '';
+
+                const finalExam = currentModule.assessments.find(assessment => assessment.isFinalExam);
+                const finalExamWeight = finalExam.weight;
+                const caWeight = 100 - finalExamWeight;
+
+                gradeBoundaries.forEach(({ grade, min }) => {
+                    const requiredScore = ((min - (normalizedCA * caWeight / 100)) / finalExamWeight) * 100;
+
+                    let displayScore;
+                    if (requiredScore <= 0) {
+                        displayScore = '0.00%';
+                    } else if (requiredScore > 100) {
+                        displayScore = 'Not possible';
+                    } else {
+                        displayScore = `${requiredScore.toFixed(2)}%`;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.className = 'border-b';
+                    row.innerHTML = `
+                        <td class="py-2">${grade} (${min}%+)</td>
+                        <td class="py-2">${displayScore}</td>
+                    `;
+
+                    finalExamRequirements.appendChild(row);
+                });
+            }
+
+            function calculateFinalGrade(event) {
+                event.preventDefault();
+
+                const finalExamMarkInput = document.getElementById('final-exam-mark');
+                const finalExamMarkError = document.getElementById('final-exam-mark-error');
+
+                finalExamMarkInput.classList.remove('error-input');
+                finalExamMarkError.classList.add('hidden');
+
+                const finalExam = currentModule.assessments.find(assessment => assessment.isFinalExam);
+
+                const finalExamMark = parseMark(finalExamMarkInput.value, finalExam.maxMark);
+
+                if (finalExamMark === null) {
+                    finalExamMarkInput.classList.add('error-input');
+                    finalExamMarkError.textContent = 'Invalid mark format';
+                    finalExamMarkError.classList.remove('hidden');
+                    return;
+                }
+
+                const finalExamContribution = finalExamMark * finalExam.weight / 100;
+                const overallPercentage = currentModule.caMarks + finalExamContribution;
+
+                let grade = '';
+                for (const boundary of gradeBoundaries) {
+                    if (overallPercentage >= boundary.min) {
+                        grade = boundary.grade;
+                        break;
+                    }
+                }
+
+                currentModule.finalExamMark = finalExamMarkInput.value;
+                currentModule.finalGrade = `${grade} (${overallPercentage.toFixed(2)}%)`;
+                currentModule.lastUpdated = new Date().toISOString();
+
+                saveModuleToStorage(currentModule);
+
+                document.getElementById('final-grade').textContent = currentModule.finalGrade;
+                document.getElementById('final-grade-result').classList.remove('hidden');
+            }
+
+            function saveModuleToStorage(module) {
+                const savedModules = getSavedModules();
+
+                const existingIndex = savedModules.findIndex(m => m.id === module.id);
+
+                if (existingIndex !== -1) {
+                    savedModules[existingIndex] = module;
+                } else {
+                    savedModules.push(module);
+                }
+
+                localStorage.setItem('gradeCalculatorModules', JSON.stringify(savedModules));
+            }
+
+            function getSavedModules() {
+                const savedModulesJson = localStorage.getItem('gradeCalculatorModules');
+                return savedModulesJson ? JSON.parse(savedModulesJson) : [];
+            }
+
+            function loadSavedModules() {
+                const savedModules = getSavedModules();
+                const savedModulesList = document.getElementById('saved-modules-list');
+                const noModulesMessage = document.getElementById('no-modules-message');
+
+                if (savedModules.length === 0) {
+                    noModulesMessage.classList.remove('hidden');
+                    savedModulesList.innerHTML = '';
+                    return;
+                }
+
+                noModulesMessage.classList.add('hidden');
+
+                savedModules.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+
+                savedModulesList.innerHTML = '';
+
+                savedModules.forEach(module => {
+                    const moduleItem = document.createElement('div');
+                    moduleItem.className = 'bg-gray-50 rounded-sm p-4';
+
+                    const lastUpdated = new Date(module.lastUpdated);
+                    const formattedDate = lastUpdated.toLocaleString();
+
+                    let statusBadge = '';
+
+                    if (module.finalGrade) {
+                        const grade = module.finalGrade.split(' ')[0];
+                        statusBadge = `<span class="grade-badge grade-${grade.toLowerCase().replace('+', '-plus').replace('-', '-minus')}">${grade}</span>`;
+                    } else if (module.caMarks !== null) {
+                        const totalNonFinalExamWeight = module.assessments
+                            .filter(assessment => !assessment.isFinalExam)
+                            .reduce((sum, assessment) => sum + assessment.weight, 0);
+
+                        const normalizedCA = (module.caMarks / totalNonFinalExamWeight) * 100;
+
+                        if (normalizedCA >= 45) {
+                            statusBadge = '<span class="pass-badge">PASSED</span>';
+                        } else {
+                            statusBadge = '<span class="fail-badge">FAILED</span>';
+                        }
+                    }
+
+                    moduleItem.innerHTML = `
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-800">${module.name}</h3>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    Last updated: ${formattedDate}
+                                </p>
+                                ${statusBadge ? `<div class="mt-2">${statusBadge}</div>` : ''}
+                            </div>
+                            <div class="flex space-x-2 mt-3 sm:mt-0">
+                                <button class="px-3 py-1.5 bg-gray-800 text-white text-sm rounded-sm hover:bg-gray-700 transition-colors edit-module-btn" data-module-id="${module.id}">
+                                    Edit
+                                </button>
+                                <button class="px-3 py-1.5 bg-red-500 text-white text-sm rounded-sm hover:bg-red-600 transition-colors delete-module-btn" data-module-id="${module.id}">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    savedModulesList.appendChild(moduleItem);
+
+                    moduleItem.querySelector('.edit-module-btn').addEventListener('click', function () {
+                        editModule(module.id);
+                    });
+
+                    moduleItem.querySelector('.delete-module-btn').addEventListener('click', function () {
+                        showDeleteConfirmation(module.id);
+                    });
+                });
+            }
+
+            function editModule(moduleId) {
+                const savedModules = getSavedModules();
+                const module = savedModules.find(m => m.id === moduleId);
+
+                if (!module) {
+                    return;
+                }
+
+                currentModule = module;
+
+                if (module.caMarks !== null) {
+                    document.getElementById('results-module-name').textContent = module.name;
+                    showResults();
+                }
+                else if (module.assessments.length > 0) {
+                    document.getElementById('module-name-display').textContent = module.name;
+                    showMarksInput();
+                }
+                else {
+                    populateModuleSetupForm(module);
+                    showModuleSetup();
+                }
+            }
+
+            function populateModuleSetupForm(module) {
+                document.getElementById('module-name').value = module.name;
+
+                const activitiesTableBody = document.getElementById('activities-table-body');
+                activitiesTableBody.innerHTML = '';
+
+                if (module.assessments.length > 0) {
+                    module.assessments.forEach(assessment => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b';
+
+                        row.innerHTML = `
+                            <td class="py-3 pr-2">
+                                <input class="w-full px-3 py-1.5 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-400 activity-name" 
+                                       type="text" value="${assessment.name}" required>
+                            </td>
+                            <td class="py-3 pr-2">
+                                <input class="w-full px-3 py-1.5 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-400 activity-weight" 
+                                       type="number" min="1" max="100" value="${assessment.weight}" required>
+                            </td>
+                            <td class="py-3 pr-2">
+                                <input class="w-full px-3 py-1.5 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-gray-400 activity-max-mark" 
+                                       type="number" min="1" value="${assessment.maxMark}" required>
+                            </td>
+                            <td class="py-3 pr-2 text-center">
+                                <input class="h-4 w-4 text-gray-800 focus:ring-gray-400 activity-final-exam" type="checkbox" ${assessment.isFinalExam ? 'checked' : ''}>
+                            </td>
+                            <td class="py-3">
+                                <button type="button" class="inline-flex items-center justify-center p-1.5 text-red-500 rounded-sm hover:bg-red-50 transition-colors remove-activity-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </td>
+                        `;
+
+                        activitiesTableBody.appendChild(row);
+
+                        const nameInput = row.querySelector('.activity-name');
+                        const maxMarkInput = row.querySelector('.activity-max-mark');
+                        const finalExamCheckbox = row.querySelector('.activity-final-exam');
+                        const removeButton = row.querySelector('.remove-activity-btn');
+
+                        nameInput.addEventListener('input', function () {
+                            if (this.value.toLowerCase().includes('lab') && maxMarkInput.value === '100') {
+                                maxMarkInput.value = 10;
+                            }
+                        });
+
+                        finalExamCheckbox.addEventListener('change', function () {
+                            if (this.checked) {
+                                document.querySelectorAll('.activity-final-exam').forEach(checkbox => {
+                                    if (checkbox !== this) {
+                                        checkbox.checked = false;
+                                    }
+                                });
+                            }
+                        });
+
+                        removeButton.addEventListener('click', function () {
+                            if (activitiesTableBody.children.length > 1) {
+                                row.remove();
+                                validateModuleSetup();
+                            }
+                        });
+
+                        row.querySelectorAll('input').forEach(input => {
+                            input.addEventListener('input', validateModuleSetup);
+                            input.addEventListener('change', validateModuleSetup);
+                        });
+                    });
+                } else {
+                    addActivity();
+                }
+
+                validateModuleSetup();
+            }
+
+            function showDeleteConfirmation(moduleId) {
+                moduleToDelete = moduleId;
+                deleteModal.classList.remove('hidden');
+            }
+
+            function confirmDeleteModule() {
+                if (!moduleToDelete) {
+                    return;
+                }
+
+                const savedModules = getSavedModules();
+
+                const updatedModules = savedModules.filter(module => module.id !== moduleToDelete);
+
+                localStorage.setItem('gradeCalculatorModules', JSON.stringify(updatedModules));
+
+                moduleToDelete = null;
+
+                deleteModal.classList.add('hidden');
+
+                loadSavedModules();
+            }
+        });
+    </script>
+</body>
+
+</html>
